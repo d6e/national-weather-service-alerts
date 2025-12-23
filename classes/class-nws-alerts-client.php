@@ -79,7 +79,7 @@ class NWS_Alerts_Client {
         // Google Maps API - requires API key (use nws_alerts_google_maps_api_key filter to provide one)
         $google_maps_api_key = apply_filters('nws_alerts_google_maps_api_key', '');
         if (!empty($google_maps_api_key)) {
-            wp_enqueue_script('google-map-api', 'https://maps.googleapis.com/maps/api/js?key=' . esc_attr($google_maps_api_key), false, null, false);
+            wp_enqueue_script('google-map-api', 'https://maps.googleapis.com/maps/api/js?key=' . rawurlencode($google_maps_api_key), false, null, false);
         }
     }
 
