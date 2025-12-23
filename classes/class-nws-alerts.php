@@ -211,13 +211,22 @@ class NWS_Alerts {
                     // Load XML via CURL
                     $curl = curl_init($nws_alerts_xml_url);
                     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($curl, CURLOPT_TIMEOUT, 10);
                     $curl_data = curl_exec($curl);
-                    $nws_alerts_xml = simplexml_load_string($curl_data, 'SimpleXMLElement', LIBXML_NOERROR | LIBXML_ERR_NONE);
-                    set_site_transient($transient_key, $curl_data, 180);
+                    $curl_error = curl_errno($curl);
+                    curl_close($curl);
+                    if ($curl_data !== false && $curl_error === 0) {
+                        $nws_alerts_xml = simplexml_load_string($curl_data, 'SimpleXMLElement', LIBXML_NOERROR | LIBXML_ERR_NONE);
+                        if ($nws_alerts_xml !== false) {
+                            set_site_transient($transient_key, $curl_data, 180);
+                        }
+                    }
                 } else if (ini_get('allow_url_fopen')) {
                     // Load XML via simplexml_load_file
-                    $nws_alerts_xml = simplexml_load_file($nws_alerts_xml_url, 'SimpleXMLElement', LIBXML_NOERROR | LIBXML_ERR_NONE);
-                    set_site_transient($transient_key, $nws_alerts_xml->asXML(), 180);
+                    $nws_alerts_xml = @simplexml_load_file($nws_alerts_xml_url, 'SimpleXMLElement', LIBXML_NOERROR | LIBXML_ERR_NONE);
+                    if ($nws_alerts_xml !== false) {
+                        set_site_transient($transient_key, $nws_alerts_xml->asXML(), 180);
+                    }
                 }
             } else {
                 $nws_alerts_xml = simplexml_load_string(get_site_transient($transient_key), 'SimpleXMLElement', LIBXML_NOERROR | LIBXML_ERR_NONE);
