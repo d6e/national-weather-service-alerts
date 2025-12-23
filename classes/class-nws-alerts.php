@@ -173,12 +173,12 @@ class NWS_Alerts {
         if ($locations_query === null && $scope !== 'national') $this->set_error(NWS_ALERTS_ERROR_NO_LOCATION);
 
         // Individual locations_query variables
-        $latitude = $locations_query['latitude'];
-        $longitude = $locations_query['longitude'];
-        $zip = $locations_query['zip'];
-        $city = $locations_query['city'];
-        $state = $locations_query['state'];
-        $county = $locations_query['county'];
+        $latitude = isset($locations_query['latitude']) ? $locations_query['latitude'] : null;
+        $longitude = isset($locations_query['longitude']) ? $locations_query['longitude'] : null;
+        $zip = isset($locations_query['zip']) ? $locations_query['zip'] : null;
+        $city = isset($locations_query['city']) ? $locations_query['city'] : null;
+        $state = isset($locations_query['state']) ? $locations_query['state'] : null;
+        $county = isset($locations_query['county']) ? $locations_query['county'] : null;
 
         $county_code = $wpdb->get_var($wpdb->prepare("SELECT countyansi FROM $table_name_codes WHERE state LIKE %s AND county LIKE %s", $state, '%' . $county . '%'));
         $county_code = str_pad($county_code, 3, '0', STR_PAD_LEFT);
