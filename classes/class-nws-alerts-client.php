@@ -75,7 +75,12 @@ class NWS_Alerts_Client {
 
         /* JavaScript */
         wp_enqueue_script('nws-alerts-js', NWS_ALERTS_URL . 'js/nws-alerts.js', array('jquery'), null, true);
-        wp_enqueue_script('google-map-api', 'https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=weather&sensor=false', false, null, false);
+
+        // Google Maps API - requires API key (use nws_alerts_google_maps_api_key filter to provide one)
+        $google_maps_api_key = apply_filters('nws_alerts_google_maps_api_key', '');
+        if (!empty($google_maps_api_key)) {
+            wp_enqueue_script('google-map-api', 'https://maps.googleapis.com/maps/api/js?key=' . esc_attr($google_maps_api_key), false, null, false);
+        }
     }
 
 

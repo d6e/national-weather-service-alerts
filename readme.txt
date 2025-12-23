@@ -88,8 +88,17 @@ this error, despite trying the above fixes, please try deactivating and deleting
 
 = I'm seeing the following message: Data Error =
 The plugin will show this message when it is unable to retrieve the Atom feed from the National Weather Service.
-It is rare for this to happen and when it does it's generally because the Atom feed is temporarily unavailable. 
+It is rare for this to happen and when it does it's generally because the Atom feed is temporarily unavailable.
 Simply refreshing the page should fix the problem.
+
+= How do I enable Google Maps for alert polygons? =
+Google Maps requires an API key. To enable maps, add this to your theme's functions.php:
+
+`add_filter('nws_alerts_google_maps_api_key', function() {
+    return 'YOUR_GOOGLE_MAPS_API_KEY';
+});`
+
+You can get an API key from the Google Cloud Console.
 
 
 
