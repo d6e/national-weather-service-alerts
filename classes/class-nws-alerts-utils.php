@@ -5,9 +5,6 @@ class NWS_Alerts_Utils {
 
     static $displays = array();
 
-    // Allowed display template names (whitelist for security)
-    private static $allowed_displays = array('bar', 'basic', 'full', 'list');
-
 
     /*
     * Validates and sanitizes the display parameter to prevent local file inclusion.
@@ -18,7 +15,6 @@ class NWS_Alerts_Utils {
     * @access public
     */
     public static function validate_display($display) {
-        // Ensure it's a string and only contains alphanumeric characters and hyphens
         if (!is_string($display)) {
             return NWS_ALERTS_DISPLAY_DEFAULT;
         }
@@ -26,8 +22,8 @@ class NWS_Alerts_Utils {
         // Sanitize: only allow alphanumeric characters and hyphens
         $display = preg_replace('/[^a-zA-Z0-9\-]/', '', $display);
 
-        // Check against whitelist of allowed displays
-        if (in_array($display, self::$allowed_displays, true)) {
+        // Validate against dynamically registered displays
+        if (array_key_exists($display, self::$displays)) {
             return $display;
         }
 
