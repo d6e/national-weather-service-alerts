@@ -193,13 +193,13 @@ class NWS_Alerts {
         // Set the XML (atom) feed URL to be loaded
         if ($scope === NWS_ALERTS_SCOPE_NATIONAL) {
             // National
-            $nws_alerts_xml_url = 'http://alerts.weather.gov/cap/us.php?x=0';
+            $nws_alerts_xml_url = 'https://alerts.weather.gov/cap/us.php?x=0';
         } else if ($scope === NWS_ALERTS_SCOPE_STATE) {
             // State
-            $nws_alerts_xml_url = 'http://alerts.weather.gov/cap/' . $state_abbrev . '.php?x=0';
+            $nws_alerts_xml_url = 'https://alerts.weather.gov/cap/' . $state_abbrev . '.php?x=0';
         } else {
             // Users requested location
-            $nws_alerts_xml_url = 'http://alerts.weather.gov/cap/wwaatmget.php?x=' . strtoupper($state_abbrev) . 'C' . $county_code . '&y=0';
+            $nws_alerts_xml_url = 'https://alerts.weather.gov/cap/wwaatmget.php?x=' . strtoupper($state_abbrev) . 'C' . $county_code . '&y=0';
         }
 
         // Load XML and cache

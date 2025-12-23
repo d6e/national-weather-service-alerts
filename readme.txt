@@ -16,7 +16,7 @@ Easily add official National Weather Service alerts to your website.
 == Description ==
 
 The National Weather Service Alerts plugin allows you to easily display weather alerts on your website. The 
-alerts are pulled directly from the National Weather Service (http://alerts.weather.gov) based on the location 
+alerts are pulled directly from the National Weather Service (https://alerts.weather.gov) based on the location 
 that you specify and are then parsed, sorted, and output to your website. The alerts are then automatically updated using
 AJAX, based on the severity of the alerts for the specified location. The location can be set by using zipcode, 
 city and state, or state and county. There is also the option to choose the scope of what alerts to include, 
