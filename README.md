@@ -2,7 +2,7 @@
 <p>The official repository for the National Weather Service Alerts WordPress plugin. This repository contains the most recent changes, including new features and bug fixes, however to download the latest stable release use the WordPress repository.</p>
 <hr />
 <ul>
-    <li>Readme: <a href="https://github.com/laubsterboy/national-weather-service-alerts/blob/master/readme.txt">readme.txt</a></li>
+    <li>Readme: <a href="https://github.com/d6e/national-weather-service-alerts/blob/master/readme.txt">readme.txt</a></li>
     <li>WordPress Repository: <a href="https://wordpress.org/plugins/national-weather-service-alerts/">https://wordpress.org/plugins/national-weather-service-alerts/</a></a></li>
 </ul>
 <hr />
@@ -91,7 +91,7 @@
 <h3>Filters</h3>
 <strong>nws_alerts_allowed_alert_types</strong>
 <ul>
-    <li>Source File: <a href="https://github.com/laubsterboy/national-weather-service-alerts/blob/master/classes/class-nws-alerts.php">classes/class-nws-alerts.php</a></li>
+    <li>Source File: <a href="https://github.com/d6e/national-weather-service-alerts/blob/master/classes/class-nws-alerts.php">classes/class-nws-alerts.php</a></li>
     <li>Parameters:
         <ul>
             <li>$allowed_alert_types
@@ -109,7 +109,7 @@
 </ul>
 <strong>nws_alerts_allowed_msg_types</strong>
 <ul>
-    <li>Source File: <a href="https://github.com/laubsterboy/national-weather-service-alerts/blob/master/classes/class-nws-alerts.php">classes/class-nws-alerts.php</a></li>
+    <li>Source File: <a href="https://github.com/d6e/national-weather-service-alerts/blob/master/classes/class-nws-alerts.php">classes/class-nws-alerts.php</a></li>
     <li>Parameters:
         <ul>
             <li>$allowed_msg_types
@@ -127,7 +127,7 @@
 </ul>
 <strong>nws_alerts_allowed_status_types</strong>
 <ul>
-    <li>Source File: <a href="https://github.com/laubsterboy/national-weather-service-alerts/blob/master/classes/class-nws-alerts.php">classes/class-nws-alerts.php</a></li>
+    <li>Source File: <a href="https://github.com/d6e/national-weather-service-alerts/blob/master/classes/class-nws-alerts.php">classes/class-nws-alerts.php</a></li>
     <li>Parameters:
         <ul>
             <li>$allowed_status_types
@@ -145,7 +145,7 @@
 </ul>
 <strong>nws_alerts_sort_alert_types</strong>
 <ul>
-    <li>Source File: <a href="https://github.com/laubsterboy/national-weather-service-alerts/blob/master/classes/class-nws-alerts.php">classes/class-nws-alerts.php</a></li>
+    <li>Source File: <a href="https://github.com/d6e/national-weather-service-alerts/blob/master/classes/class-nws-alerts.php">classes/class-nws-alerts.php</a></li>
     <li>Parameters:
         <ul>
             <li>$alert_types
@@ -163,7 +163,7 @@
 </ul>
 <strong>nws_alerts_template_path</strong>
 <ul>
-    <li>Source File: <a href="https://github.com/laubsterboy/national-weather-service-alerts/blob/master/classes/class-nws-alerts-utils.php">classes/class-nws-alerts-utils.php</a></li>
+    <li>Source File: <a href="https://github.com/d6e/national-weather-service-alerts/blob/master/classes/class-nws-alerts-utils.php">classes/class-nws-alerts-utils.php</a></li>
     <li>Use: Can be used to specify an alternative location for display templates, by modifying the $paths array, to be used with a plugin or a custom location within a theme.</li>
     <li>Parameters:
         <ul>
@@ -184,7 +184,7 @@
 <h3>Functions</h3>
 <strong>NWS_Alerts_Utils::register_display_template</strong>
 <ul>
-    <li>Source File: <a href="https://github.com/laubsterboy/national-weather-service-alerts/blob/master/classes/class-nws-alerts-utils.php">classes/class-nws-alerts-utils.php</a></li>
+    <li>Source File: <a href="https://github.com/d6e/national-weather-service-alerts/blob/master/classes/class-nws-alerts-utils.php">classes/class-nws-alerts-utils.php</a></li>
     <li>Parameters:
         <ul>
             <li>$args = array('display' => 'identifier', 'name' => 'Title')</li>

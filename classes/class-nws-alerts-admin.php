@@ -598,7 +598,7 @@ class NWS_Alerts_Admin {
         } else if ($control === 'fix') {
             if ($default) { $default = ' checked="checked"'; } else { $default = ''; }
             $return_value .= '<tr>';
-				$return_value .= '<td><h4>Fixed Header</h4><p class="howto">Check this box if the main header/navigation bar is set to a fixed position. This will position the Alerts Bar below the header rather than above. This is an experimental feature and may not be compatible with all themes. If this does not work with your theme you may need to add the Alerts Bar manually using the <a href="https://github.com/laubsterboy/national-weather-service-alerts" target="_blank">shortcode</a>.</p></td>';
+				$return_value .= '<td><h4>Fixed Header</h4><p class="howto">Check this box if the main header/navigation bar is set to a fixed position. This will position the Alerts Bar below the header rather than above. This is an experimental feature and may not be compatible with all themes. If this does not work with your theme you may need to add the Alerts Bar manually using the <a href="https://github.com/d6e/national-weather-service-alerts" target="_blank">shortcode</a>.</p></td>';
 				$return_value .= '<td>';
 					$return_value .= '<div class="nws-alerts-control-checkbox-container">';
 				        $return_value .= '<input data-control-parent="' . $control . '" data-control="' . $control . '" id="' . $control_id_prefix . '-' . $control . '" name="' . str_replace('-', '_', $control_id_prefix . '_' . $control) . '" type="checkbox"' . $default . ' />';
