@@ -62,7 +62,7 @@ class NWS_Alerts_Admin {
     public static function build_tables($file = false, $part = false) {
         $return_value = array('populate_tables' => false, 'status' => 0);
 
-        if (DOING_AJAX) {
+        if (DOING_AJAX && current_user_can('manage_options')) {
             global $wpdb;
             $sql;
             $table_name = NWS_ALERTS_TABLE_NAME_LOCATIONS;
@@ -156,7 +156,7 @@ class NWS_Alerts_Admin {
         $current_file = (int) get_site_transient('nws_alerts_populate_tables_current_file');
         $current_part = (int) get_site_transient('nws_alerts_populate_tables_current_part');
 
-        if (DOING_AJAX && NWS_ALERTS_TABLES_BUILT !== true && $args !== false && $current_file !== false && $current_part !== false) {
+        if (DOING_AJAX && current_user_can('manage_options') && NWS_ALERTS_TABLES_BUILT !== true && $args !== false && $current_file !== false && $current_part !== false) {
 
             $file_name = $args[$current_file]['file_name_base'] . $current_part . '.' . $args[$current_file]['file_extention'];
 
@@ -246,50 +246,57 @@ class NWS_Alerts_Admin {
                 $control = 'zip';
                 $key = $prefix . $control;
                 if (isset($_POST[$key])) {
-                    update_option($key, $_POST[$key]);
-                    $controls[$control] = $_POST[$key];
+                    $value = sanitize_text_field($_POST[$key]);
+                    update_option($key, $value);
+                    $controls[$control] = $value;
                 }
 
                 $control = 'city';
                 $key = $prefix . $control;
                 if (isset($_POST[$key])) {
-                    update_option($key, $_POST[$key]);
-                    $controls[$control] = $_POST[$key];
+                    $value = sanitize_text_field($_POST[$key]);
+                    update_option($key, $value);
+                    $controls[$control] = $value;
                 }
 
                 $control = 'state';
                 $key = $prefix . $control;
                 if (isset($_POST[$key])) {
-                    update_option($key, $_POST[$key]);
-                    $controls[$control] = $_POST[$key];
+                    $value = sanitize_text_field($_POST[$key]);
+                    update_option($key, $value);
+                    $controls[$control] = $value;
                 }
 
                 $control = 'county';
                 $key = $prefix . $control;
                 if (isset($_POST[$key])) {
-                    update_option($key, $_POST[$key]);
-                    $controls[$control] = $_POST[$key];
+                    $value = sanitize_text_field($_POST[$key]);
+                    update_option($key, $value);
+                    $controls[$control] = $value;
                 }
 
                 $control = 'location_title';
                 $key = $prefix . $control;
                 if (isset($_POST[$key])) {
-                    update_option($key, $_POST[$key]);
-                    $controls[$control] = $_POST[$key];
+                    $value = sanitize_text_field($_POST[$key]);
+                    update_option($key, $value);
+                    $controls[$control] = $value;
                 }
 
                 $control = 'scope';
                 $key = $prefix . $control;
                 if (isset($_POST[$key])) {
-                    update_option($key, $_POST[$key]);
-                    $controls[$control] = $_POST[$key];
+                    $value = sanitize_text_field($_POST[$key]);
+                    update_option($key, $value);
+                    $controls[$control] = $value;
                 }
 
                 $control = 'limit';
                 $key = $prefix . $control;
                 if (isset($_POST[$key])) {
-                    update_option($key, $_POST[$key]);
-                    $controls[$control] = $_POST[$key];
+                    $value = absint($_POST[$key]);
+                    update_option($key, $value);
+                    $controls[$control] = $value;
                 }
 
                 $control = 'fix';
@@ -368,8 +375,10 @@ class NWS_Alerts_Admin {
     * @access   public
     */
     public static function admin_enqueue_scripts_action() {
-	    wp_enqueue_style('nws-alerts-admin-css', NWS_ALERTS_URL . 'css/nws-alerts-admin.css');
-        if (NWS_ALERTS_TABLES_BUILT !== true) wp_enqueue_script('nws-alerts-admin-js', NWS_ALERTS_URL . 'js/nws-alerts-admin.js', array(), false, true);
+	    wp_enqueue_style('nws-alerts-admin-css', NWS_ALERTS_URL . 'css/nws-alerts-admin.css', array(), NWS_ALERTS_VERSION);
+        if (NWS_ALERTS_TABLES_BUILT !== true) {
+            wp_enqueue_script('nws-alerts-admin-js', NWS_ALERTS_URL . 'js/nws-alerts-admin.js', array('jquery'), NWS_ALERTS_VERSION, true);
+        }
     }
 
 

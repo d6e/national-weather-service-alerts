@@ -3,7 +3,9 @@
 * Plugin Name: National Weather Service Alerts
 * Plugin URI: https://github.com/laubsterboy/nws-alerts
 * Description: Easily add official National Weather Service alerts to your website.
-* Version: 1.4.0-beta.2
+* Version: 1.4.0
+* Requires at least: 6.0
+* Requires PHP: 7.4
 * Author: John Russell
 * Author URI: http://www.laubsterboy.com
 * Copyright: (c) 2014 John Russell
@@ -37,17 +39,17 @@ if (NWS_ALERTS_TABLES_BUILT !== true) {
     // Shortcodes
     add_shortcode('nws_alerts', 'NWS_Alerts_Shortcodes::shortcode_handler');
 
-    // Client - Set JavaScript ajaxurl global variable
-    add_action('wp_head','NWS_Alerts_Client::set_ajaxurl');
-
-    // Client - Scripts and Styles
+    // Client - Scripts and Styles (includes AJAX URL via wp_localize_script)
     add_action('wp_enqueue_scripts', 'NWS_Alerts_Client::scripts_styles');
 
     // Client - AJAX listeners
-    if (is_admin()) add_action('wp_ajax_nopriv_nws_alerts_refresh', 'NWS_Alerts_Client::refresh');
-    if (is_admin()) add_action('wp_ajax_nws_alerts_refresh', 'NWS_Alerts_Client::refresh');
+    add_action('wp_ajax_nopriv_nws_alerts_refresh', 'NWS_Alerts_Client::refresh');
+    add_action('wp_ajax_nws_alerts_refresh', 'NWS_Alerts_Client::refresh');
 
-    // Client - WordPress output buffer
+    // Client - Alerts bar via wp_body_open hook (preferred method for WP 5.2+)
+    add_action('wp_body_open', 'NWS_Alerts_Client::render_alerts_bar');
+
+    // Client - WordPress output buffer (fallback for themes without wp_body_open support)
     add_action('wp_head', 'NWS_Alerts_Client::buffer_start');
     add_action('wp_footer', 'NWS_Alerts_Client::buffer_end');
 

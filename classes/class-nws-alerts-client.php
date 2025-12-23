@@ -7,8 +7,8 @@
 
 class NWS_Alerts_Client {
 
-    var $nonce_string = 'nws_alerts_nonce';
-    var $nonce;
+    private static $nonce_action = 'nws_alerts_refresh';
+    private static $alerts_bar_rendered = false;
 
 
 
@@ -22,6 +22,13 @@ class NWS_Alerts_Client {
     * @access public
     */
     public static function refresh() {
+        // Verify nonce for security
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field($_POST['nonce']) : '';
+        if (!wp_verify_nonce($nonce, self::$nonce_action)) {
+            echo 0;
+            wp_die();
+        }
+
         $s_zip = isset($_POST['zip']) ? sanitize_text_field($_POST['zip']) : '';
         $s_scope = isset($_POST['scope']) ? sanitize_text_field($_POST['scope']) : NWS_ALERTS_SCOPE_COUNTY;
         $s_limit = isset($_POST['limit']) ? sanitize_text_field($_POST['limit']) : '';
@@ -31,14 +38,14 @@ class NWS_Alerts_Client {
 
         if (empty($s_zip) || empty($s_display) || empty($s_scope)) {
             echo 0;
-            die();
+            wp_die();
         }
 
         $nws_alerts_data = new NWS_Alerts(array('zip' => $s_zip, 'scope' => $s_scope, 'limit' => $s_limit));
 
         echo $nws_alerts_data->get_output_html($s_display, $s_classes, array('location_title' => $s_location_title));
 
-        die();
+        wp_die();
     }
 
 
@@ -71,15 +78,21 @@ class NWS_Alerts_Client {
     */
     public static function scripts_styles() {
         // Stylesheets
-        wp_enqueue_style('nws-alerts-css', NWS_ALERTS_URL . 'css/nws-alerts.css');
+        wp_enqueue_style('nws-alerts-css', NWS_ALERTS_URL . 'css/nws-alerts.css', array(), NWS_ALERTS_VERSION);
 
         /* JavaScript */
-        wp_enqueue_script('nws-alerts-js', NWS_ALERTS_URL . 'js/nws-alerts.js', array('jquery'), null, true);
+        wp_enqueue_script('nws-alerts-js', NWS_ALERTS_URL . 'js/nws-alerts.js', array('jquery'), NWS_ALERTS_VERSION, true);
+
+        // Pass AJAX URL and nonce to JavaScript
+        wp_localize_script('nws-alerts-js', 'nwsAlertsData', array(
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce(self::$nonce_action)
+        ));
 
         // Google Maps API - requires API key (use nws_alerts_google_maps_api_key filter to provide one)
         $google_maps_api_key = apply_filters('nws_alerts_google_maps_api_key', '');
         if (!empty($google_maps_api_key)) {
-            wp_enqueue_script('google-map-api', 'https://maps.googleapis.com/maps/api/js?key=' . rawurlencode($google_maps_api_key), false, null, false);
+            wp_enqueue_script('google-map-api', 'https://maps.googleapis.com/maps/api/js?key=' . rawurlencode($google_maps_api_key), array(), null, false);
         }
     }
 
@@ -87,19 +100,35 @@ class NWS_Alerts_Client {
 
 
     /*
-    * set_ajaxurl
+    * render_alerts_bar
     *
-    * Is called when the NWS_Alerts plugin is activated and creates necessary database tables and populates them with data
+    * Renders the alerts bar content, used by wp_body_open hook
     *
     * @return void
     * @access public
     */
-    public static function set_ajaxurl() {
-        ?>
-        <script type="text/javascript">
-            var ajaxurl = '<?php echo admin_url('admin-ajax.php'); ?>';
-        </script>
-        <?php
+    public static function render_alerts_bar() {
+        if (NWS_ALERTS_BAR_ENABLED && !self::$alerts_bar_rendered) {
+            self::$alerts_bar_rendered = true;
+
+            $nws_alerts_data = new NWS_Alerts(array(
+                'zip' => NWS_ALERTS_BAR_ZIP,
+                'city' => NWS_ALERTS_BAR_CITY,
+                'state' => NWS_ALERTS_BAR_STATE,
+                'county' => NWS_ALERTS_BAR_COUNTY,
+                'scope' => NWS_ALERTS_BAR_SCOPE
+            ));
+            $classes = '';
+            if (NWS_ALERTS_BAR_FIX) {
+                $classes .= 'nws-alerts-bar-fix';
+            }
+            $location_title = false;
+            if (NWS_ALERTS_BAR_LOCATION_TITLE !== false && NWS_ALERTS_BAR_LOCATION_TITLE !== '') {
+                $location_title = NWS_ALERTS_BAR_LOCATION_TITLE;
+            }
+
+            echo $nws_alerts_data->get_output_html(NWS_ALERTS_DISPLAY_BAR, $classes, array('location_title' => $location_title));
+        }
     }
 
 
@@ -123,7 +152,9 @@ class NWS_Alerts_Client {
     /*
     * buffer_end
     *
-    * Is called by wp_footer and clears the previously started output buffer and adds the NWS Alerts Bar immediately after the <body> tag.
+    * Is called by wp_footer and clears the previously started output buffer.
+    * If wp_body_open was not called by the theme, injects the NWS Alerts Bar after the <body> tag.
+    * This is a fallback for themes that don't support wp_body_open hook.
     *
     * @return void
     * @access public
@@ -132,20 +163,31 @@ class NWS_Alerts_Client {
         if (NWS_ALERTS_BAR_ENABLED) {
             $buffer = ob_get_clean();
 
-            if (NWS_ALERTS_BODY_CLASS_SUPPORT) {
-                $nws_alerts_data = new NWS_Alerts(array('zip' => NWS_ALERTS_BAR_ZIP,
-                                                        'city' => NWS_ALERTS_BAR_CITY,
-                                                        'state' => NWS_ALERTS_BAR_STATE,
-                                                        'county' => NWS_ALERTS_BAR_COUNTY,
-                                                        'scope' => NWS_ALERTS_BAR_SCOPE));
+            // Only inject via buffer if wp_body_open wasn't called (fallback for older themes)
+            if (NWS_ALERTS_BODY_CLASS_SUPPORT && !self::$alerts_bar_rendered) {
+                self::$alerts_bar_rendered = true;
+
+                $nws_alerts_data = new NWS_Alerts(array(
+                    'zip' => NWS_ALERTS_BAR_ZIP,
+                    'city' => NWS_ALERTS_BAR_CITY,
+                    'state' => NWS_ALERTS_BAR_STATE,
+                    'county' => NWS_ALERTS_BAR_COUNTY,
+                    'scope' => NWS_ALERTS_BAR_SCOPE
+                ));
                 $classes = '';
-                if (NWS_ALERTS_BAR_FIX) $classes .= 'nws-alerts-bar-fix';
+                if (NWS_ALERTS_BAR_FIX) {
+                    $classes .= 'nws-alerts-bar-fix';
+                }
                 $location_title = false;
-                if (NWS_ALERTS_BAR_LOCATION_TITLE !== false && NWS_ALERTS_BAR_LOCATION_TITLE !== '') $location_title = NWS_ALERTS_BAR_LOCATION_TITLE;
+                if (NWS_ALERTS_BAR_LOCATION_TITLE !== false && NWS_ALERTS_BAR_LOCATION_TITLE !== '') {
+                    $location_title = NWS_ALERTS_BAR_LOCATION_TITLE;
+                }
 
                 $body_tag_start_pos = stripos($buffer, '<body');
-                $body_tag_end_pos = stripos($buffer, '>', $body_tag_start_pos) + 1;
-                $buffer = substr_replace($buffer, $nws_alerts_data->get_output_html(NWS_ALERTS_DISPLAY_BAR, $classes, array('location_title' => $location_title)), $body_tag_end_pos, 0);
+                if ($body_tag_start_pos !== false) {
+                    $body_tag_end_pos = stripos($buffer, '>', $body_tag_start_pos) + 1;
+                    $buffer = substr_replace($buffer, $nws_alerts_data->get_output_html(NWS_ALERTS_DISPLAY_BAR, $classes, array('location_title' => $location_title)), $body_tag_end_pos, 0);
+                }
             }
 
             echo $buffer;

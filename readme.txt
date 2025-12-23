@@ -2,9 +2,10 @@
 
 Contributors: laubsterboy
 Tags: National Weather Service, NWS, Storm Prediction Center, SPC, Alert, Weather, Storm, Severe, Tornado, Thunder, Flood
-Requires at least: 3.1
-Tested up to: 4.1.1
-Stable tag: 1.4.0-beta.2
+Requires at least: 6.0
+Tested up to: 6.7
+Stable tag: 1.4.0
+Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -115,6 +116,16 @@ You can get an API key from the Google Cloud Console.
 
 
 == Changelog ==
+
+= 1.4.0 =
+* Modernization: Updated minimum PHP version to 7.4 for PHP 8.x compatibility.
+* Modernization: Updated minimum WordPress version to 6.0.
+* Security: Added AJAX nonce verification for refresh requests.
+* Security: Added input sanitization for admin settings.
+* Fixed: Removed deprecated extract() function usage.
+* Fixed: Replaced deprecated var keyword with proper visibility modifiers.
+* Improvement: Use wp_localize_script() instead of inline JavaScript for AJAX URL.
+* Improvement: Use wp_body_open hook for alerts bar injection with fallback.
 
 = 1.3.0 =
 * Added Feature: Support for WordPress Multisite.

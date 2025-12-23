@@ -16,14 +16,31 @@ class NWS_Alerts_Shortcodes {
     * @return string
     */
     public static function shortcode_handler($atts) {
-        extract(shortcode_atts(array('zip' => false, 'city' => false, 'state' => false, 'county' => false, 'location_title' => false, 'display' => NWS_ALERTS_DISPLAY_DEFAULT, 'scope' => NWS_ALERTS_SCOPE_COUNTY, 'limit' => 0), $atts));
+        $atts = shortcode_atts(array(
+            'zip' => false,
+            'city' => false,
+            'state' => false,
+            'county' => false,
+            'location_title' => false,
+            'display' => NWS_ALERTS_DISPLAY_DEFAULT,
+            'scope' => NWS_ALERTS_SCOPE_COUNTY,
+            'limit' => 0
+        ), $atts);
 
-        if ($scope !== NWS_ALERTS_SCOPE_NATIONAL && $scope !== NWS_ALERTS_SCOPE_STATE && $scope !== NWS_ALERTS_SCOPE_COUNTY) $scope = NWS_ALERTS_SCOPE_COUNTY;
+        $scope = $atts['scope'];
+        if ($scope !== NWS_ALERTS_SCOPE_NATIONAL && $scope !== NWS_ALERTS_SCOPE_STATE && $scope !== NWS_ALERTS_SCOPE_COUNTY) {
+            $scope = NWS_ALERTS_SCOPE_COUNTY;
+        }
 
-        $nws_alerts_data = new NWS_Alerts(array('zip' => $zip, 'city' => $city, 'state' => $state, 'county' => $county, 'scope' => $scope, 'limit' => $limit));
+        $nws_alerts_data = new NWS_Alerts(array(
+            'zip' => $atts['zip'],
+            'city' => $atts['city'],
+            'state' => $atts['state'],
+            'county' => $atts['county'],
+            'scope' => $scope,
+            'limit' => $atts['limit']
+        ));
 
-        return $nws_alerts_data->get_output_html($display, array(), array('location_title' => $location_title));
-
-        unset($nws_alerts_data);
+        return $nws_alerts_data->get_output_html($atts['display'], array(), array('location_title' => $atts['location_title']));
     }
 }

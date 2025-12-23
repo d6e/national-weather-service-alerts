@@ -5,10 +5,14 @@ Author: John Russell
 Author URI: http://www.laubsterboy.com
 */
 
-/*global jQuery,ajaxurl*/
+/*global jQuery,nwsAlertsData*/
 
 (function ($) {
     "use strict";
+
+    // Get AJAX URL and nonce from localized script data
+    var ajaxUrl = (typeof nwsAlertsData !== 'undefined') ? nwsAlertsData.ajaxurl : '/wp-admin/admin-ajax.php';
+    var nonce = (typeof nwsAlertsData !== 'undefined') ? nwsAlertsData.nonce : '';
 
     function setup() {
         var settings = $(this).data('settings'),
@@ -24,9 +28,10 @@ Author URI: http://www.laubsterboy.com
         setTimeout(function () {
             $.ajax({
                 type: 'POST',
-                url: ajaxurl,
+                url: ajaxUrl,
                 data: {
                     action: 'nws_alerts_refresh',
+                    nonce: nonce,
                     zip: zip,
                     scope: scope,
                     limit: limit,
