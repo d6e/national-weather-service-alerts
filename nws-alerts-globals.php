@@ -6,9 +6,9 @@
 global $wpdb, $tinymce_version;
 
 // NWS Alerts Version Information
-define('NWS_ALERTS_VERSION', '1.3.0');
-define('NWS_ALERTS_MIN_WP_VERSION', '3.1');
-define('NWS_ALERTS_MIN_PHP_VERSION', '5');
+define('NWS_ALERTS_VERSION', '1.5.0');
+define('NWS_ALERTS_MIN_WP_VERSION', '5.0');
+define('NWS_ALERTS_MIN_PHP_VERSION', '7.4');
 if (intval(substr($tinymce_version, 0, 1)) === 4) {
     define('NWS_ALERTS_TINYMCE_4', true);
 } else {
@@ -19,6 +19,10 @@ define('NWS_ALERTS_DESCRIPTION', 'Easily add official National Weather Service a
 define('NWS_ALERTS_PATH', trailingslashit(basename(dirname(__FILE__))));
 define('NWS_ALERTS_ABSPATH', plugin_dir_path(__FILE__));
 define('NWS_ALERTS_URL', plugins_url('/', __FILE__));
+
+// NWS API Configuration
+define('NWS_ALERTS_API_BASE_URL', 'https://api.weather.gov');
+define('NWS_ALERTS_USER_AGENT', 'NWS-Alerts-WordPress-Plugin/' . NWS_ALERTS_VERSION);
 
 define('NWS_ALERTS_BAR_ENABLED', filter_var(get_option('nws_alerts_alerts_bar_enabled'), FILTER_VALIDATE_BOOLEAN));
 define('NWS_ALERTS_BAR_ZIP', get_option('nws_alerts_alerts_bar_zip'));
