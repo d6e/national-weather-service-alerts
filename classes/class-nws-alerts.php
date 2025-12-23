@@ -682,5 +682,3 @@ class NWS_Alerts {
         if ($this->error === false) $this->error = $error;
     }
 }
-
-?>

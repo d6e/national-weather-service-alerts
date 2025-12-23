@@ -65,5 +65,3 @@ add_action('admin_enqueue_scripts', 'NWS_Alerts_Admin::admin_enqueue_scripts_act
 
 // Admin - WordPress Settings Page
 add_action('admin_menu', 'NWS_Alerts_Admin::add_settings_menu');
-
-?>

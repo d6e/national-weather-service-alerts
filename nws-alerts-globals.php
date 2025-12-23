@@ -69,5 +69,3 @@ function nws_alerts_body_class($classes) {
     return $classes;
 }
 add_filter('body_class', 'nws_alerts_body_class');
-
-?>

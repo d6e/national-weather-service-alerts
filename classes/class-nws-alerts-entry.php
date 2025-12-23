@@ -278,5 +278,3 @@ class NWS_Alerts_Entry {
         return $return_value;
     }
 }
-
-?>

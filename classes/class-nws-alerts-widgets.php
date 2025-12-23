@@ -40,10 +40,13 @@ class NWS_Alerts_Widget extends WP_Widget {
         if ($instance['scope'] !== NWS_ALERTS_SCOPE_NATIONAL && $instance['scope'] !== NWS_ALERTS_SCOPE_STATE && $instance['scope'] !== NWS_ALERTS_SCOPE_COUNTY) $instance['scope'] = NWS_ALERTS_SCOPE_COUNTY;
 
         if (!empty($instance['zip']) || (!empty($instance['city']) && !empty($instance['state'])) || (!empty($instance['state']) && !empty($instance['county']))) {
+            // Validate display parameter to prevent local file inclusion
+            $display = NWS_Alerts_Utils::validate_display($instance['display']);
+
             $nws_alert_data = new NWS_Alerts(array('zip' => $instance['zip'], 'city' => $instance['city'], 'state' => $instance['state'], 'county' => $instance['county'], 'scope' => $instance['scope'], 'limit' => $instance['limit']));
 
             echo $args['before_widget'];
-            echo $nws_alert_data->get_output_html($instance['display'], 'nws-alerts-widget', array('location_title' => $instance['location_title'], 'widget' => true, 'widget_before_title' => $args['before_title'], 'widget_after_title' => $args['after_title']));
+            echo $nws_alert_data->get_output_html($display, 'nws-alerts-widget', array('location_title' => $instance['location_title'], 'widget' => true, 'widget_before_title' => $args['before_title'], 'widget_after_title' => $args['after_title']));
             echo $args['after_widget'];
 
             unset($nws_alert_data);
@@ -114,16 +117,16 @@ class NWS_Alerts_Widget extends WP_Widget {
             <label for="<?php echo $this->get_field_id('display'); ?>">Display:</label>
             <select class="widefat" id="<?php echo $this->get_field_id('display'); ?>" name="<?php echo $this->get_field_name('display'); ?>">
                 <?php foreach (NWS_Alerts_Utils::$displays as $display => $name) { ?>
-                    <option value="<?php echo $display; ?>"<?php selected($instance['display'], $display) ?>><?php echo $name ?></option>
+                    <option value="<?php echo esc_attr($display); ?>"<?php selected($instance['display'], $display) ?>><?php echo esc_html($name); ?></option>
                 <?php } ?>
             </select>
         </p>
         <p>
             <label for="<?php echo $this->get_field_id('scope'); ?>">Scope:</label>
             <select class="widefat" id="<?php echo $this->get_field_id('scope'); ?>" name="<?php echo $this->get_field_name('scope'); ?>">
-                <option value="<?php echo NWS_ALERTS_SCOPE_COUNTY ?>"<?php selected($instance['scope'], NWS_ALERTS_SCOPE_COUNTY) ?>><?php echo NWS_ALERTS_SCOPE_COUNTY ?></option>
-                <option value="<?php echo NWS_ALERTS_SCOPE_STATE ?>"<?php selected($instance['scope'], NWS_ALERTS_SCOPE_STATE) ?>><?php echo NWS_ALERTS_SCOPE_STATE ?></option>
-                <option value="<?php echo NWS_ALERTS_SCOPE_NATIONAL ?>"<?php selected($instance['scope'], NWS_ALERTS_SCOPE_NATIONAL) ?>><?php echo NWS_ALERTS_SCOPE_NATIONAL ?></option>
+                <option value="<?php echo esc_attr(NWS_ALERTS_SCOPE_COUNTY); ?>"<?php selected($instance['scope'], NWS_ALERTS_SCOPE_COUNTY); ?>><?php echo esc_html(NWS_ALERTS_SCOPE_COUNTY); ?></option>
+                <option value="<?php echo esc_attr(NWS_ALERTS_SCOPE_STATE); ?>"<?php selected($instance['scope'], NWS_ALERTS_SCOPE_STATE); ?>><?php echo esc_html(NWS_ALERTS_SCOPE_STATE); ?></option>
+                <option value="<?php echo esc_attr(NWS_ALERTS_SCOPE_NATIONAL); ?>"<?php selected($instance['scope'], NWS_ALERTS_SCOPE_NATIONAL); ?>><?php echo esc_html(NWS_ALERTS_SCOPE_NATIONAL); ?></option>
             </select>
         </p>
         <p>
@@ -133,5 +136,3 @@ class NWS_Alerts_Widget extends WP_Widget {
 		<?php
 	}
 }
-
-?>
