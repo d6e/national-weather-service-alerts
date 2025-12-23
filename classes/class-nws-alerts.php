@@ -197,35 +197,38 @@ class NWS_Alerts {
             $nws_alerts_api_url = NWS_ALERTS_API_BASE_URL . '/alerts/active?point=' . $latitude . ',' . $longitude;
         }
 
-        // Load JSON from API and cache
+        // Load JSON from API and cache (skip if error already set, e.g., location not found)
         $nws_alerts_json = false;
-        $transient_key = 'nws_alerts_json_' . md5($nws_alerts_api_url);
 
-        // Build request args with User-Agent header (required by NWS API)
-        $user_agent = apply_filters('nws_alerts_user_agent', NWS_ALERTS_USER_AGENT);
-        $request_args = array(
-            'timeout' => 15,
-            'headers' => array(
-                'User-Agent' => $user_agent,
-                'Accept' => 'application/geo+json'
-            )
-        );
+        if ($this->error === false) {
+            $transient_key = 'nws_alerts_json_' . md5($nws_alerts_api_url);
 
-        // Check cache first, then fetch from API
-        $cached_data = get_site_transient($transient_key);
-        if ($cached_data === false) {
-            $response = wp_remote_get($nws_alerts_api_url, $request_args);
+            // Build request args with User-Agent header (required by NWS API)
+            $user_agent = apply_filters('nws_alerts_user_agent', NWS_ALERTS_USER_AGENT);
+            $request_args = array(
+                'timeout' => 15,
+                'headers' => array(
+                    'User-Agent' => $user_agent,
+                    'Accept' => 'application/geo+json'
+                )
+            );
 
-            if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
-                $body = wp_remote_retrieve_body($response);
-                $nws_alerts_json = json_decode($body, true);
+            // Check cache first, then fetch from API
+            $cached_data = get_site_transient($transient_key);
+            if ($cached_data === false) {
+                $response = wp_remote_get($nws_alerts_api_url, $request_args);
 
-                if ($nws_alerts_json !== null && isset($nws_alerts_json['features'])) {
-                    set_site_transient($transient_key, $body, 180); // Cache for 3 minutes
+                if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+                    $body = wp_remote_retrieve_body($response);
+                    $nws_alerts_json = json_decode($body, true);
+
+                    if ($nws_alerts_json !== null && isset($nws_alerts_json['features'])) {
+                        set_site_transient($transient_key, $body, 180); // Cache for 3 minutes
+                    }
                 }
+            } else {
+                $nws_alerts_json = json_decode($cached_data, true);
             }
-        } else {
-            $nws_alerts_json = json_decode($cached_data, true);
         }
 
         $nws_alerts_data = array();
@@ -552,6 +555,9 @@ class NWS_Alerts {
     * @return string
     */
     public function get_output_html($display = NWS_ALERTS_DISPLAY_DEFAULT, $classes = array(), $args = array()) {
+        // Defense-in-depth: validate display parameter to prevent local file inclusion
+        $display = NWS_Alerts_Utils::validate_display($display);
+
         $args_defaults = array(
             'location_title' => false,
             'default_classes' => array('nws-alerts-' . $display),
