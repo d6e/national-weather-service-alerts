@@ -133,12 +133,7 @@ class NWS_Alerts {
     */
     public function __construct($args = array()) {
         global $wpdb;
-        $nws_alerts_xml;
-        $nws_alerts_xml_url;
-        $nws_alerts_data;
-        $entry_cap_data;
         $locations_query = null;
-        $county_code;
         $table_name_codes = NWS_ALERTS_TABLE_NAME_CODES;
         $table_name_locations = NWS_ALERTS_TABLE_NAME_LOCATIONS;
 
@@ -190,83 +185,98 @@ class NWS_Alerts {
         $state_abbrev = $state;
         $state = ucwords(NWS_Alerts_Utils::convert_state_format($state, 'abbrev'));
 
-        // Set the XML (atom) feed URL to be loaded
+        // Set the API URL based on scope
         if ($scope === NWS_ALERTS_SCOPE_NATIONAL) {
-            // National
-            $nws_alerts_xml_url = 'https://alerts.weather.gov/cap/us.php?x=0';
+            // National - all active alerts
+            $nws_alerts_api_url = NWS_ALERTS_API_BASE_URL . '/alerts/active';
         } else if ($scope === NWS_ALERTS_SCOPE_STATE) {
-            // State
-            $nws_alerts_xml_url = 'https://alerts.weather.gov/cap/' . $state_abbrev . '.php?x=0';
+            // State-level alerts
+            $nws_alerts_api_url = NWS_ALERTS_API_BASE_URL . '/alerts/active?area=' . strtoupper($state_abbrev);
         } else {
-            // Users requested location
-            $nws_alerts_xml_url = 'https://alerts.weather.gov/cap/wwaatmget.php?x=' . strtoupper($state_abbrev) . 'C' . $county_code . '&y=0';
+            // County/local alerts - use point query with lat/lon
+            $nws_alerts_api_url = NWS_ALERTS_API_BASE_URL . '/alerts/active?point=' . $latitude . ',' . $longitude;
         }
 
-        // Load XML and cache
-        $nws_alerts_xml = false;
-        $transient_key = 'nws_alerts_xml_' . $zip . '_' . $scope;
-        if (isset($zip) && $zip !== null) {
-            if (get_site_transient($transient_key) === false) {
-                if (function_exists('curl_version')) {
-                    // Load XML via CURL
-                    $curl = curl_init($nws_alerts_xml_url);
-                    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-                    curl_setopt($curl, CURLOPT_TIMEOUT, 10);
-                    $curl_data = curl_exec($curl);
-                    $curl_error = curl_errno($curl);
-                    curl_close($curl);
-                    if ($curl_data !== false && $curl_error === 0) {
-                        $nws_alerts_xml = simplexml_load_string($curl_data, 'SimpleXMLElement', LIBXML_NOERROR | LIBXML_ERR_NONE);
-                        if ($nws_alerts_xml !== false) {
-                            set_site_transient($transient_key, $curl_data, 180);
-                        }
-                    }
-                } else if (ini_get('allow_url_fopen')) {
-                    // Load XML via simplexml_load_file
-                    $nws_alerts_xml = @simplexml_load_file($nws_alerts_xml_url, 'SimpleXMLElement', LIBXML_NOERROR | LIBXML_ERR_NONE);
-                    if ($nws_alerts_xml !== false) {
-                        set_site_transient($transient_key, $nws_alerts_xml->asXML(), 180);
+        // Load JSON from API and cache (skip if error already set, e.g., location not found)
+        $nws_alerts_json = false;
+
+        if ($this->error === false) {
+            $transient_key = 'nws_alerts_json_' . md5($nws_alerts_api_url);
+
+            // Build request args with User-Agent header (required by NWS API)
+            $user_agent = apply_filters('nws_alerts_user_agent', NWS_ALERTS_USER_AGENT);
+            $request_args = array(
+                'timeout' => 15,
+                'headers' => array(
+                    'User-Agent' => $user_agent,
+                    'Accept' => 'application/geo+json'
+                )
+            );
+
+            // Check cache first, then fetch from API
+            $cached_data = get_site_transient($transient_key);
+            if ($cached_data === false) {
+                $response = wp_remote_get($nws_alerts_api_url, $request_args);
+
+                if (!is_wp_error($response) && wp_remote_retrieve_response_code($response) === 200) {
+                    $body = wp_remote_retrieve_body($response);
+                    $nws_alerts_json = json_decode($body, true);
+
+                    if ($nws_alerts_json !== null && isset($nws_alerts_json['features'])) {
+                        set_site_transient($transient_key, $body, 180); // Cache for 3 minutes
                     }
                 }
             } else {
-                $nws_alerts_xml = simplexml_load_string(get_site_transient($transient_key), 'SimpleXMLElement', LIBXML_NOERROR | LIBXML_ERR_NONE);
+                $nws_alerts_json = json_decode($cached_data, true);
             }
         }
 
         $nws_alerts_data = array();
 
-        if ($nws_alerts_xml !== false) {
-            $nws_alerts_data['id'] = isset($nws_alerts_xml->id) ? (string)$nws_alerts_xml->id : null;
-            $nws_alerts_data['generator'] = isset($nws_alerts_xml->generator) ? (string)$nws_alerts_xml->generator : null;
-            $nws_alerts_data['updated'] = isset($nws_alerts_xml->updated) ? (string)$nws_alerts_xml->updated : null;
-            $nws_alerts_data['title'] = isset($nws_alerts_xml->title) ? (string)$nws_alerts_xml->title : null;
-            $nws_alerts_data['link'] = isset($nws_alerts_xml->link['href']) ? (string)$nws_alerts_xml->link['href'] : null;
+        if ($nws_alerts_json !== false && isset($nws_alerts_json['features'])) {
+            // Set feed-level metadata
+            $nws_alerts_data['id'] = $nws_alerts_api_url;
+            $nws_alerts_data['generator'] = 'api.weather.gov';
+            $nws_alerts_data['updated'] = $nws_alerts_json['updated'] ?? date('c');
+            $nws_alerts_data['title'] = $nws_alerts_json['title'] ?? 'NWS Active Alerts';
+            $nws_alerts_data['link'] = $nws_alerts_api_url;
             $nws_alerts_data['entries'] = array();
 
+            // Parse through features and load into $nws_alerts_data array
+            foreach ($nws_alerts_json['features'] as $feature) {
+                $props = $feature['properties'];
 
-            // Parse through and load into $nws_alerts_data array
-            foreach($nws_alerts_xml->entry as $entry) {
-                // load 'cap' namespaced data into $entry_cap_data
-                $entry_cap_data = $entry->children('urn:oasis:names:tc:emergency:cap:1.1');
+                // Transform GeoJSON polygon [lon,lat] to "lat,lon lat,lon" format for Google Maps
+                $cap_polygon = '';
+                if (isset($feature['geometry']) &&
+                    $feature['geometry']['type'] === 'Polygon' &&
+                    isset($feature['geometry']['coordinates'][0])) {
+                    $polygon_points = array();
+                    foreach ($feature['geometry']['coordinates'][0] as $coord) {
+                        // GeoJSON is [lon, lat], convert to "lat,lon"
+                        $polygon_points[] = $coord[1] . ',' . $coord[0];
+                    }
+                    $cap_polygon = implode(' ', $polygon_points);
+                }
 
                 $_entry = array(
-                    'id' => isset($entry->id) ? (string)$entry->id : null,
-                    'updated' => isset($entry->updated) ? NWS_Alerts_Utils::get_date_format(new DateTime((string)$entry->updated)) : null, // convert to date object '2013-08-30T21:31:26+00:00'
-                    'published' => isset($entry->published) ? NWS_Alerts_Utils::get_date_format(new DateTime((string)$entry->published)) : null, // convert to date object '2013-08-30T11:33:00-05:00'
-                    'title' => isset($entry->title) ? (string)$entry->title : null,
-                    'link' => isset($entry->link['href']) ? (string)$entry->link['href'] : null,
-                    'summary' => isset($entry->summary) ? (string)$entry->summary : null,
-                    'cap_event' => isset($entry_cap_data->event) ? (string)$entry_cap_data->event : null, // list of cap:event above
-                    'cap_effective' => isset($entry_cap_data->effective) ? NWS_Alerts_Utils::get_date_format(new DateTime((string)$entry_cap_data->effective)) : null, // convert to date object '2013-08-30T11:33:00-05:00'
-                    'cap_expires' => isset($entry_cap_data->expires) ? NWS_Alerts_Utils::get_date_format(new DateTime((string)$entry_cap_data->expires)) : null, // convert to date object '2013-08-30T19:00:00-05:00'
-                    'cap_status' => isset($entry_cap_data->status) ? (string)$entry_cap_data->status : null,
-                    'cap_msg_type' => isset($entry_cap_data->msgType) ? (string)$entry_cap_data->msgType : null,
-                    'cap_category' => isset($entry_cap_data->category) ? (string)$entry_cap_data->category : null,
-                    'cap_urgency' => isset($entry_cap_data->urgency) ? (string)$entry_cap_data->urgency : null,
-                    'cap_severity' => isset($entry_cap_data->severity) ? (string)$entry_cap_data->severity : null,
-                    'cap_certainty' => isset($entry_cap_data->certainty) ? (string)$entry_cap_data->certainty : null,
-                    'cap_area_desc' => isset($entry_cap_data->areaDesc) ? (string)$entry_cap_data->areaDesc : null,
-                    'cap_polygon' => isset($entry_cap_data->polygon) ? (string)$entry_cap_data->polygon : null
+                    'id' => $props['id'] ?? $feature['id'],
+                    'updated' => isset($props['sent']) ? NWS_Alerts_Utils::get_date_format(new DateTime($props['sent'])) : null,
+                    'published' => isset($props['sent']) ? NWS_Alerts_Utils::get_date_format(new DateTime($props['sent'])) : null,
+                    'title' => $props['headline'] ?? null,
+                    'link' => $feature['id'],
+                    'summary' => $props['description'] ?? null,
+                    'cap_event' => $props['event'] ?? null,
+                    'cap_effective' => isset($props['effective']) ? NWS_Alerts_Utils::get_date_format(new DateTime($props['effective'])) : null,
+                    'cap_expires' => isset($props['expires']) ? NWS_Alerts_Utils::get_date_format(new DateTime($props['expires'])) : null,
+                    'cap_status' => $props['status'] ?? null,
+                    'cap_msg_type' => $props['messageType'] ?? null,
+                    'cap_category' => $props['category'] ?? null,
+                    'cap_urgency' => $props['urgency'] ?? null,
+                    'cap_severity' => $props['severity'] ?? null,
+                    'cap_certainty' => $props['certainty'] ?? null,
+                    'cap_area_desc' => $props['areaDesc'] ?? null,
+                    'cap_polygon' => $cap_polygon
                 );
 
                 $nws_alerts_data['entries'][] = $_entry;
@@ -545,6 +555,9 @@ class NWS_Alerts {
     * @return string
     */
     public function get_output_html($display = NWS_ALERTS_DISPLAY_DEFAULT, $classes = array(), $args = array()) {
+        // Defense-in-depth: validate display parameter to prevent local file inclusion
+        $display = NWS_Alerts_Utils::validate_display($display);
+
         $args_defaults = array(
             'location_title' => false,
             'default_classes' => array('nws-alerts-' . $display),

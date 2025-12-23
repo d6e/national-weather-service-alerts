@@ -32,6 +32,9 @@ class NWS_Alerts_Shortcodes {
             $scope = NWS_ALERTS_SCOPE_COUNTY;
         }
 
+        // Validate display parameter to prevent local file inclusion
+        $display = NWS_Alerts_Utils::validate_display($atts['display']);
+
         $nws_alerts_data = new NWS_Alerts(array(
             'zip' => $atts['zip'],
             'city' => $atts['city'],
@@ -41,6 +44,6 @@ class NWS_Alerts_Shortcodes {
             'limit' => $atts['limit']
         ));
 
-        return $nws_alerts_data->get_output_html($atts['display'], array(), array('location_title' => $atts['location_title']));
+        return $nws_alerts_data->get_output_html($display, array(), array('location_title' => $atts['location_title']));
     }
 }

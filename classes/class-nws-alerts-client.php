@@ -36,6 +36,9 @@ class NWS_Alerts_Client {
         $s_classes = isset($_POST['classes']) ? sanitize_text_field($_POST['classes']) : array();
         $s_location_title = isset($_POST['location_title']) ? sanitize_text_field($_POST['location_title']) : false;
 
+        // Validate display parameter to prevent local file inclusion
+        $s_display = NWS_Alerts_Utils::validate_display($s_display);
+
         if (empty($s_zip) || empty($s_display) || empty($s_scope)) {
             echo 0;
             wp_die();

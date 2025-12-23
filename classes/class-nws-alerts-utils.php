@@ -7,6 +7,31 @@ class NWS_Alerts_Utils {
 
 
     /*
+    * Validates and sanitizes the display parameter to prevent local file inclusion.
+    * Returns the sanitized display value if valid, or the default display otherwise.
+    *
+    * @param string $display The display value to validate
+    * @return string A safe display value
+    * @access public
+    */
+    public static function validate_display($display) {
+        if (!is_string($display)) {
+            return NWS_ALERTS_DISPLAY_DEFAULT;
+        }
+
+        // Sanitize: only allow alphanumeric characters and hyphens
+        $display = preg_replace('/[^a-zA-Z0-9\-]/', '', $display);
+
+        // Validate against dynamically registered displays
+        if (array_key_exists($display, self::$displays)) {
+            return $display;
+        }
+
+        return NWS_ALERTS_DISPLAY_DEFAULT;
+    }
+
+
+    /*
     * @return array
     * @access public
     */
