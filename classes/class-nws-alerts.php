@@ -158,15 +158,15 @@ class NWS_Alerts {
 
         // Based on available attributes, search the nws_alerts_locations database table for a match
         if ($zip !== false && is_numeric($zip)) {
-            $locations_query = $wpdb->get_row("SELECT * FROM $table_name_locations WHERE zip = $zip", ARRAY_A);
+            $locations_query = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name_locations WHERE zip = %d", $zip), ARRAY_A);
         } else if ($city !== false && $state !== false) {
             $city = strtolower($city);
             $state = strlen($state) > 2 ? NWS_Alerts_Utils::convert_state_format($state) : $state;
-            $locations_query = $wpdb->get_row("SELECT * FROM $table_name_locations WHERE city LIKE '$city' AND state LIKE '$state'", ARRAY_A);
+            $locations_query = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name_locations WHERE city LIKE %s AND state LIKE %s", $city, $state), ARRAY_A);
         } else if ($state !== false && $county !== false) {
             $state = strlen($state) > 2 ? NWS_Alerts_Utils::convert_state_format($state) : $state;
             $county = strtolower($county);
-            $locations_query = $wpdb->get_row("SELECT * FROM $table_name_locations WHERE state LIKE '$state' AND county LIKE '$county'", ARRAY_A);
+            $locations_query = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name_locations WHERE state LIKE %s AND county LIKE %s", $state, $county), ARRAY_A);
         }
 
         // Location could not be found or not enough information to determine the location and get an ANSI County code - set error status
@@ -180,7 +180,7 @@ class NWS_Alerts {
         $state = $locations_query['state'];
         $county = $locations_query['county'];
 
-        $county_code = $wpdb->get_var("SELECT countyansi FROM $table_name_codes WHERE state LIKE '{$state}' AND county LIKE '%{$county}%'");
+        $county_code = $wpdb->get_var($wpdb->prepare("SELECT countyansi FROM $table_name_codes WHERE state LIKE %s AND county LIKE %s", $state, '%' . $county . '%'));
         $county_code = str_pad($county_code, 3, '0', STR_PAD_LEFT);
 
         if (strlen($county_code) < 3) { $county_code = '0' . $county_code; }
