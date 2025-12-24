@@ -9,10 +9,18 @@
 .nws-alerts {
     position:relative;
     z-index:3;
+    display:block;
     float:left;
     clear:both;
+    width:100%;
+    min-height:1px;
+    overflow:visible;
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing:border-box;
+    -ms-box-sizing:border-box;
     box-sizing:border-box;
     opacity:1;
+    visibility:visible;
 }
 .nws-alerts-collapsible:hover,
 .nws-alerts-page-builder-index-fix {
@@ -129,6 +137,10 @@
 .nws-alerts-details {
     display:block;
     overflow:hidden;
+    -webkit-transition:top 400ms, opacity 400ms;
+    -moz-transition:top 400ms, opacity 400ms;
+    -ms-transition:top 400ms, opacity 400ms;
+    -o-transition:top 400ms, opacity 400ms;
     transition:top 400ms, opacity 400ms;
     border-radius:6px;
 }
@@ -205,6 +217,10 @@
 .nws-alerts-collapsible .nws-alerts-entries {
 	max-height:0;
 	padding:20px;
+	-webkit-transition:max-height 300ms;
+	-moz-transition:max-height 300ms;
+	-ms-transition:max-height 300ms;
+	-o-transition:max-height 300ms;
 	transition:max-height 300ms;
 	color:#333;
 }
