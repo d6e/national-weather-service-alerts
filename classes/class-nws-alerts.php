@@ -194,7 +194,10 @@ class NWS_Alerts {
             $nws_alerts_api_url = NWS_ALERTS_API_BASE_URL . '/alerts/active?area=' . strtoupper($state_abbrev);
         } else {
             // County/local alerts - use point query with lat/lon
-            $nws_alerts_api_url = NWS_ALERTS_API_BASE_URL . '/alerts/active?point=' . $latitude . ',' . $longitude;
+            // Strip + prefix from coordinates as NWS API doesn't accept it
+            $clean_lat = ltrim($latitude, '+');
+            $clean_lon = ltrim($longitude, '+');
+            $nws_alerts_api_url = NWS_ALERTS_API_BASE_URL . '/alerts/active?point=' . $clean_lat . ',' . $clean_lon;
         }
 
         // Load JSON from API and cache (skip if error already set, e.g., location not found)
