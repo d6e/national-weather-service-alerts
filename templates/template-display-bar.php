@@ -12,7 +12,7 @@
 
 ?>
 
-<article class="nws-alerts nws-alerts-collapsible <?php echo $classes; ?>" data-settings="<?php echo $settings; ?>">
+<article class="nws-alerts <?php echo $classes; ?>" data-settings="<?php echo $settings; ?>">
     <!-- Heading -->
     <section class="<?php echo $args['heading']['classes']; ?>">
         <!-- Heading graphic -->
@@ -49,8 +49,5 @@
             <?php echo NWS_ALERTS_ERROR_NO_ENTRIES; ?>
         <?php endif; ?>
         </section>
-
-        <!-- Details map -->
-        <?php echo $this->get_output_google_map(); ?>
     </section>
 </article>
