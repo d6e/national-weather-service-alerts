@@ -3,7 +3,7 @@
 * Plugin Name: National Weather Service Alerts
 * Plugin URI: https://github.com/d6e/national-weather-service-alerts
 * Description: Easily add official National Weather Service alerts to your website.
-* Version: 1.4.0-beta.5
+* Version: 1.4.0-beta.6
 * Requires at least: 6.0
 * Requires PHP: 7.4
 * Author: John Russell
